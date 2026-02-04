@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Trash2, 
@@ -12,25 +12,22 @@ import {
   Trophy,
   Users,
   Eraser,
-  Download,
   Smartphone,
   Share2,
   Copy,
-  ExternalLink,
   Check,
-  CloudCheck,
-  Save
+  Save,
+  CloudCheck
 } from 'lucide-react';
-import { Participant, GameState } from './types';
-import { COLORS, DEFAULT_STATE } from './constants';
-import { getSquareAnalysis } from './services/geminiService';
+import { Participant, GameState } from './types.ts';
+import { COLORS, DEFAULT_STATE } from './constants.tsx';
+import { getSquareAnalysis } from './services/geminiService.ts';
 
 const STORAGE_KEY = 'superbowl_squares_state_v3';
 const ACTIVE_PLAYER_KEY = 'squares_active_player';
 const VIEW_KEY = 'squares_current_view';
 
 const App: React.FC = () => {
-  // --- STATE INITIALIZATION (Local Storage Load) ---
   const [gameState, setGameState] = useState<GameState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -60,12 +57,9 @@ const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [importCode, setImportCode] = useState('');
-  
-  // PWA Install logic
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
-  // --- PERSISTENCE EFFECTS ---
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -76,7 +70,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
-  // Sync Main Game State to LocalStorage
   useEffect(() => {
     setSaveStatus('saving');
     const timer = setTimeout(() => {
@@ -84,11 +77,10 @@ const App: React.FC = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
       setSaveStatus('saved');
       setLastSavedStr(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    }, 500); // Debounce save to avoid thrashing disk
+    }, 500);
     return () => clearTimeout(timer);
   }, [gameState]);
 
-  // Sync Active Player and View
   useEffect(() => {
     if (activeParticipantId) localStorage.setItem(ACTIVE_PLAYER_KEY, activeParticipantId);
     else localStorage.removeItem(ACTIVE_PLAYER_KEY);
@@ -98,7 +90,6 @@ const App: React.FC = () => {
     localStorage.setItem(VIEW_KEY, view);
   }, [view]);
 
-  // --- ACTIONS ---
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
       alert("Installation shortcut not available yet. Please use your browser's 'Add to Home Screen' option manually.");
@@ -274,15 +265,15 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-indigo-400 shrink-0 border border-slate-700">1</div>
-                    <p className="text-sm text-slate-300">Tap the <b>"Open in new window"</b> or <b>"External Preview"</b> icon in the top right of this AI Studio pane.</p>
+                    <p className="text-sm text-slate-300">Open this app in your browser tab (Chrome/Safari).</p>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-indigo-400 shrink-0 border border-slate-700">2</div>
-                    <p className="text-sm text-slate-300">In the clean browser tab, tap the <b>Share</b> button (iOS) or <b>Menu ⋮</b> (Android).</p>
+                    <p className="text-sm text-slate-300">Tap the <b>Share</b> button (iOS) or <b>Menu ⋮</b> (Android).</p>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-indigo-400 shrink-0 border border-slate-700">3</div>
-                    <p className="text-sm text-slate-300">Select <b>"Add to Home Screen"</b>. This ensures the app doesn't disappear when you close your browser.</p>
+                    <p className="text-sm text-slate-300">Select <b>"Add to Home Screen"</b> to install the standalone app icon.</p>
                   </div>
                 </div>
               </div>
@@ -292,7 +283,6 @@ const App: React.FC = () => {
                   <h3 className="text-lg font-bold flex items-center gap-2">
                     <Share2 className="w-5 h-5 text-indigo-400" /> Transfer to Phone
                   </h3>
-                  <p className="text-xs text-slate-400">Use this to move your player list from your computer to your phone instantly.</p>
                   <div className="space-y-2">
                     <button 
                       onClick={exportGame}
@@ -307,11 +297,11 @@ const App: React.FC = () => {
                         placeholder="Paste code on new device..."
                         value={importCode}
                         onChange={(e) => setImportCode(e.target.value)}
-                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-indigo-500 transition-all"
+                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-indigo-500"
                       />
                       <button 
                         onClick={importGame}
-                        className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all active:scale-95"
+                        className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all"
                       >
                         Load
                       </button>
@@ -348,7 +338,7 @@ const App: React.FC = () => {
                       onClick={clearGrid}
                       className="w-full flex items-center justify-center gap-2 bg-rose-900/10 hover:bg-rose-900/30 text-rose-400 border border-rose-900/30 rounded-xl py-3.5 text-xs font-bold transition-all"
                     >
-                      <Trash2 className="w-4 h-4" /> Wipe All Data & Names
+                      <Trash2 className="w-4 h-4" /> Wipe All Data
                     </button>
                   </div>
                 </div>
@@ -356,7 +346,7 @@ const App: React.FC = () => {
 
               <div className="flex justify-between items-center pt-6 border-t border-slate-800">
                 <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                  Autosave: <span className="text-emerald-500">Enabled</span>
+                  Autosave: <span className="text-emerald-500">Active</span>
                 </div>
                 <button 
                   onClick={() => setView('grid')}
@@ -431,7 +421,7 @@ const App: React.FC = () => {
                       <Lock className="w-3 h-3" /> Grid Randomized
                     </span>
                   ) : (
-                    <span className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-400 rounded-full text-xs font-bold border border-amber-500/20 animate-pulse">
+                    <span className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-400 rounded-full text-xs font-bold border border-amber-500/20">
                       <Unlock className="w-3 h-3" /> Live Editing
                     </span>
                   )}
@@ -459,7 +449,7 @@ const App: React.FC = () => {
                       className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-black transition-all active:scale-95 ${isGridFull ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'}`}
                     >
                       <Shuffle className="w-5 h-5" /> 
-                      {isGridFull ? 'RANDOMIZE AXES' : `${100 - filledCount} More Needed`}
+                      {isGridFull ? 'RANDOMIZE AXES' : `${100 - filledCount} More`}
                     </button>
                   )}
                 </div>
@@ -468,7 +458,7 @@ const App: React.FC = () => {
               {aiAnalysis && (
                 <div className="bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-3xl p-8 animate-in slide-in-from-bottom-4 shadow-2xl">
                   <h3 className="text-lg font-black text-fuchsia-400 flex items-center gap-2 mb-4">
-                    <Trophy className="w-5 h-5" /> Gold Mine Analysis
+                    <Trophy className="w-5 h-5" /> Pro Report
                   </h3>
                   <div className="text-sm text-fuchsia-100/80 leading-relaxed whitespace-pre-line font-medium">{aiAnalysis}</div>
                 </div>
@@ -481,10 +471,6 @@ const App: React.FC = () => {
                   <h2 className="text-lg font-bold flex items-center gap-2">
                     <Users className="w-5 h-5 text-indigo-400" /> Players
                   </h2>
-                  <div className="flex items-center gap-1.5 sm:hidden">
-                    <span className={`w-1.5 h-1.5 rounded-full ${saveStatus === 'saving' ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
-                    <span className="text-[9px] font-bold text-slate-500 uppercase">Saved</span>
-                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -492,16 +478,16 @@ const App: React.FC = () => {
                     <input 
                       type="text" placeholder="First" value={newFirstName}
                       onChange={(e) => setNewFirstName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-indigo-500 transition-all"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-indigo-500"
                     />
                     <input 
                       type="text" placeholder="Last" value={newLastName}
                       onChange={(e) => setNewLastName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && addParticipant()}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-indigo-500 transition-all"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
-                  <button onClick={addParticipant} className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black transition-all shadow-xl shadow-indigo-600/20 active:scale-95">
+                  <button onClick={addParticipant} className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black transition-all shadow-xl active:scale-95">
                     <Plus className="w-4 h-4" /> ADD PLAYER
                   </button>
                 </div>
@@ -513,7 +499,7 @@ const App: React.FC = () => {
                       <div 
                         key={p.id}
                         onClick={() => setActiveParticipantId(p.id)}
-                        className={`group flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer active:scale-[0.98] ${activeParticipantId === p.id ? 'bg-indigo-500/10 border-indigo-500/50 shadow-inner' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                        className={`group flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer active:scale-[0.98] ${activeParticipantId === p.id ? 'bg-indigo-500/10 border-indigo-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-lg" style={{ backgroundColor: p.color }}>
@@ -537,7 +523,7 @@ const App: React.FC = () => {
                 <div className="pt-4 border-t border-slate-800">
                    <div className="flex items-start gap-2 text-[10px] text-slate-500">
                     <Info className="w-3.5 h-3.5 flex-shrink-0 text-indigo-500" />
-                    <p>Select a player above, then tap grid squares to fill them. Your progress is autosaved locally.</p>
+                    <p>Select a player, then tap squares to assign them. All data stays on this phone.</p>
                   </div>
                 </div>
               </section>
@@ -549,7 +535,7 @@ const App: React.FC = () => {
       <footer className="mt-20 border-t border-slate-800 p-8 text-center text-slate-600 flex flex-col items-center gap-2">
         <p className="text-[10px] font-black uppercase tracking-[0.3em]">Super Bowl Squares Pro • Mobile Manager</p>
         <div className="flex items-center gap-2 text-[9px] font-bold text-slate-700 bg-slate-900/50 px-3 py-1 rounded-full">
-           <Save className="w-3 h-3" /> LOCAL STORAGE PERSISTENCE ACTIVE
+           <Save className="w-3 h-3" /> PERSISTENT STORAGE ACTIVE
         </div>
       </footer>
     </div>
